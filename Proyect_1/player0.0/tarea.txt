@@ -1,0 +1,14 @@
+1. examinar directorio para cargar todos los ogg
+2. Lista de reproduccion 
+	adicionar cancion
+	borrar cancion
+3. interaccion (cliente):
+	next
+	play
+
+4. enviar cancion por tramos de 512 kb
+
+corregir errores
+
+30 de agosto
+
