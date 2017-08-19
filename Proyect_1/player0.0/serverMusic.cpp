@@ -4,10 +4,15 @@
 #include <cassert>
 #include <unordered_map>
 #include <fstream>
+#include <dirent.h>
+//#include <list>
+//#include <filesystem>
+//#include <experimental/filesystem> 
 
 
 using namespace std;
 using namespace zmqpp;
+//namespace fs = std::filesystem;
 
 vector<char> readFileToBytes(const string& fileName) {
 	ifstream ifs(fileName, ios::binary | ios::ate);
@@ -25,18 +30,36 @@ void fileToMesage(const string& fileName, message& msg) {
 	vector<char> bytes = readFileToBytes(fileName);
 	msg.add_raw(bytes.data(), bytes.size());
 }
+    
 
 int main(int argc, char** argv) {
+
   context ctx;
   socket s(ctx, socket_type::rep);
   s.bind("tcp://*:5555");
 
   string path(argv[1]);
-  unordered_map<string,string> songs;
-  songs["s1"] = path + "s1.ogg";
-  songs["s2"] = path + "s2.ogg";
-  songs["s3"] = path + "s3.ogg";
 
+  //list<string> SongsList;
+  unordered_map<string,string> songs;
+  string aux;
+
+  DIR *dir;
+struct dirent *ent;
+if ((dir = opendir ("/home/jhon/Cliente-Servidor/Proyect_1/player0.0/music")) != NULL) {
+  /* print all the files and directories within directory */
+  while ((ent = readdir (dir)) != NULL) {
+    //printf ("%s\n", ent->d_name);
+    aux = path + ent->d_name;
+    //printf("%s\n",aux );
+    songs.insert({ent->d_name,aux});
+  }
+  closedir (dir);
+} else {
+  /* could not open directory */
+  perror ("");
+  return EXIT_FAILURE;
+}
   cout << "Start serving requests!\n";
   while(true) {
     message m;

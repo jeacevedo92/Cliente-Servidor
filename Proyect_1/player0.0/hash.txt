@@ -1,3 +1,0 @@
-para ver la hash
-
-md5sum nombreArchivo
