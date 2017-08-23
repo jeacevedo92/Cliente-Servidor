@@ -3,10 +3,7 @@
 #include <string>
 #include <zmqpp/zmqpp.hpp>
 #include <SFML/Audio.hpp>
-
 #include <thread>
-
-#include <queue>
 #include <mutex>
 #include <condition_variable>
 
@@ -14,7 +11,7 @@ using namespace std;
 using namespace zmqpp;
 using namespace sf;
 
-/*
+
 template <class T>
 class SafeQueue
 {
@@ -70,7 +67,7 @@ private:
   std::queue<T> q;
   mutable std::mutex m;
   std::condition_variable c;
-};*/
+};
 
 
 void messageToFile(const message& msg, const string& fileName) {
@@ -82,13 +79,14 @@ void messageToFile(const message& msg, const string& fileName) {
 	ofs.write((char*)data, size);
 }
 
-void ControlPlaySongs(Music *music, queue<string> *List){
+void ControlPlaySongs(Music *music, SafeQueue<string> *List){
 	while(true){
 
-		while(List->empty()){}
+		//while(List->empty()){}
 
-		string song = List->front();
-		List->pop();
+		//string song = List->front();
+		string song = List->dequeue();
+		//List->pop();
 
 		while(music->getStatus() == SoundSource::Playing){			
 		}
@@ -136,12 +134,10 @@ int main(int argc, char** argv) {
 	s.connect("tcp://localhost:5555");
 
 	Music music;	
-	queue<string> PlayList;
+	//queue<string> PlayList;
+	SafeQueue<string> PlayList;
 
 	thread t1(ControlPlaySongs,&music,&PlayList);
-
-	//SafeQueue PlayList;
-
 
 
 	while(true){
@@ -150,19 +146,7 @@ int main(int argc, char** argv) {
 		string operation;
 		cin >> operation;
 
-		//cout << "Sending  some work!\n";
-
-
 		message m;
-		//m << operation;
-		
-	
-		//string operation(argv[1]);
-
-		//if(argc == 3) {
-		//	string file(argv[2]);
-		//	m << file;
-		//}
 
 		if (operation == "play"){
 
@@ -177,21 +161,14 @@ int main(int argc, char** argv) {
 				cout << "ingrese el nombre de la cancion a agregar: " << endl;
 				cin >> SongName; 
 				//PlayList.enqueue(SongName);
-				PlayList.push(SongName);
+				PlayList.enqueue(SongName);
 				} else if (operation == "list"){
 					m << operation;
 					}else if (operation == "exit"){
 						cout << "Hasta pronto ...";
 						return 0;
 					}
-
-		/*while(!PlayList.empty()){
-			cout << PlayList.front()<<endl;
-			PlayList.pop();
-		}
-		*/
-
-		//PlayList.PrintQueue();
+		
 
 		string result;
 		message answer;
