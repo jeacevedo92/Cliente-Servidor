@@ -14,7 +14,7 @@ using namespace std;
 using namespace zmqpp;
 using namespace sf;
 
-
+/*
 template <class T>
 class SafeQueue
 {
@@ -70,18 +70,7 @@ private:
   std::queue<T> q;
   mutable std::mutex m;
   std::condition_variable c;
-};
-
-void ControlPlaySongs(Music *music){
-	while(true){
-		//cout << "por fuera" << endl;
-		while(music->getStatus() == SoundSource::Playing){
-			//cout<< "cancion sonando !!!";
-		}
-
-    }
-    cout << "Finished!" << endl;
-}
+};*/
 
 
 void messageToFile(const message& msg, const string& fileName) {
@@ -93,6 +82,51 @@ void messageToFile(const message& msg, const string& fileName) {
 	ofs.write((char*)data, size);
 }
 
+void ControlPlaySongs(Music *music, queue<string> *List){
+	while(true){
+
+		while(List->empty()){}
+
+		string song = List->front();
+		List->pop();
+
+		while(music->getStatus() == SoundSource::Playing){			
+		}
+
+		context ctx;
+		socket s(ctx, socket_type::req);
+		cout << "Connecting to tcp port 5555 since thread\n";
+		s.connect("tcp://localhost:5555");
+
+		message m;
+		message answer;
+		string result;
+
+		cout << "The next song  will be play "  << endl;
+
+		cout << "la cancion de la cola es: "<< song << endl; 
+		//strcpy(song,file);
+
+		m << "play";
+		m << song;
+
+		s.send(m);			
+		s.receive(answer);
+
+		answer >> result;
+
+		messageToFile(answer,"song.ogg");
+		music->openFromFile("song.ogg");
+		music->play();//asincrono
+
+
+
+    }
+    cout << "Finished!" << endl;
+}
+
+
+
 int main(int argc, char** argv) {
 	cout << "This is the client\n";
 
@@ -101,13 +135,13 @@ int main(int argc, char** argv) {
 	cout << "Connecting to tcp port 5555\n";
 	s.connect("tcp://localhost:5555");
 
-	Music music;
+	Music music;	
+	queue<string> PlayList;
 
-	thread t1(ControlPlaySongs,&music);
+	thread t1(ControlPlaySongs,&music,&PlayList);
 
 	//SafeQueue PlayList;
 
-	queue<string> PlayList;
 
 
 	while(true){
@@ -156,7 +190,7 @@ int main(int argc, char** argv) {
 			PlayList.pop();
 		}
 		*/
-		
+
 		//PlayList.PrintQueue();
 
 		string result;
