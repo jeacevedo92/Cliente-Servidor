@@ -66,6 +66,7 @@ vector<char> readFileToBytes(const string& fileName) {
 
 void fileToMesage(const string& fileName, message& msg) {
   vector<char> bytes = readFileToBytes(fileName);
+  cout <<"el tamano del vector de las partes: " << bytes.size()<<endl;
   msg.add_raw(bytes.data(), bytes.size());
 }
     
@@ -82,7 +83,7 @@ int main(int argc, char** argv) {
 
   string ruta = "/home/jhon/Cliente-Servidor/Proyect_1/player0.0/music/";
   string rutaSplits = "/home/jhon/Cliente-Servidor/Proyect_1/player0.0/music/Splits/";
-  int ChunkSize = 512000;
+  int ChunkSize = 1024000;
 
   //list<string> SongsList;
   unordered_map<string,string> songs;
@@ -126,12 +127,16 @@ if ((dir = opendir ("/home/jhon/Cliente-Servidor/Proyect_1/player0.0/music/")) !
 
       string archivo = ruta + chunkName;
       size_t Tamano = FileSize(archivo);
-      size_t NumParts = Tamano/ChunkSize;
+      float NumParts = Tamano/ChunkSize;
 
       cout <<"NumParts: " << NumParts << endl ;
      
       int count=0;
       int pos;
+
+      message n;
+      n << "file";
+      n << to_string(NumParts);
 
       while (count <= NumParts){
 
@@ -149,7 +154,12 @@ if ((dir = opendir ("/home/jhon/Cliente-Servidor/Proyect_1/player0.0/music/")) !
         fullChunkName.append(myString);
         pos = ChunkSize * count;
 
-        cout << "pos: " << pos << endl;
+        if (pos > (Tamano-ChunkSize)){
+          ChunkSize = (Tamano-pos);
+        }
+
+        cout << "pos: " << pos << "ChunkSize " << ChunkSize << "pos + ChunkSize: " << pos+ChunkSize<<endl<<endl;
+
 
         vector<char> v = readFileToBytesSplit(archivo,ChunkSize,pos);
         BytesToFileSplit(v,rutaSplits+fullChunkName);
@@ -159,20 +169,18 @@ if ((dir = opendir ("/home/jhon/Cliente-Servidor/Proyect_1/player0.0/music/")) !
         cout << "sending song " << chunkName << "  part: " << count <<endl;
 
         cout << "fullChunkName  " << fullChunkName <<endl;
-
-        message n;
-        n << "file";
-
+       
         fileToMesage(rutaSplits+fullChunkName, n);
 
-        cout << "ruta..." << rutaSplits+fullChunkName <<endl ;
-
-        s.send(n);
-
-        cout << "mensaje enviado .. "<<endl;
-
+        //cout << "ruta..." << rutaSplits+fullChunkName <<endl ;
+       
         count ++;
       }
+
+      s.send(n); // mensaje queda ["file, NumPArts, Song"]
+
+      cout << "mensaje enviado .. "<<endl;
+
 
       /*
       cout << "sending song " << chunkName

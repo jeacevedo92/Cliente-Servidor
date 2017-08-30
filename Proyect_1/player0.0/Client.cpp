@@ -79,13 +79,21 @@ private:
 };
 
 
-void messageToFile(const message& msg, const string& fileName) {
+void messageToFile(const message& msg, const string& fileName,const int Num) {
+	int cont = 2;
 	const void *data;
-	msg.get(&data, 1);
-	size_t size = msg.size(1);
+	size_t size;
 
 	ofstream ofs(fileName, ios::binary);
-	ofs.write((char*)data, size);
+	ofs.clear();
+
+	while (cont <= (Num+2)){
+
+		msg.get(&data, cont);
+		size = msg.size(cont);
+		ofs.write((char*)data, size);
+		cont++;
+	}
 }
 
 void ControlPlaySongs(Music *music, SafeQueue<string> *List){
@@ -112,8 +120,15 @@ void ControlPlaySongs(Music *music, SafeQueue<string> *List){
 		s.receive(answer);
 
 		answer >> result;
+		string NumParts;
+		int Num;
 
-		messageToFile(answer,"song.ogg");
+		answer >> NumParts;
+
+		Num = stoi(NumParts);
+
+
+		messageToFile(answer,"song.ogg",Num);
 		music->openFromFile("song.ogg");
 		music->play();//asincrono
 
@@ -160,6 +175,7 @@ int main(int argc, char** argv) {
 				cout << "ingrese el nombre de la cancion a agregar: " << endl;
 				cin >> SongName;
 				PlayList.enqueue(SongName);
+				cout << "Song Enqueue";
 				} else if (operation == "list"){
 					m << operation;
 					}else if (operation == "next"){
@@ -174,19 +190,30 @@ int main(int argc, char** argv) {
 
 		string result;
 		message answer;
+		string NumParts;
+		int Num;
 
 
 		if (operation!="add" && operation!="next" ){
 
 			s.send(m);
-			//Aqui hay que hacer que reciba todos los mensajes en answer 
+			cout << "envia";
+			
 			s.receive(answer); //sincrono
+			cout << "recibe";
 		
 			answer >> result;
-			}else{
-				result = "add";
+
+			if (operation == "play")
+			{
+				answer >> NumParts;
+				Num = stoi(NumParts);
+				cout << "numero de partes" <<Num<<endl ; 
+				
 			}
 			
+			
+			}			
 
 		if (result == "list") {
 			size_t numSongs;
@@ -199,18 +226,12 @@ int main(int argc, char** argv) {
 			}
 
 		} else if (result == "file"){
-			messageToFile(answer,"song.ogg");
+			messageToFile(answer,"song.ogg",Num);
 			music.openFromFile("song.ogg");
 			music.play();//asincrono					
 
 			//int x;
 			//cin >> x;
-		} else if (result == "add"){
-			cout <<"element add"<<endl;
-			}else{
-				cout << "Don't know what to do!!!" << endl;
-			}
-
-		//return 0;
+		}
 	}
 }
