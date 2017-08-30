@@ -140,8 +140,8 @@ int main(int argc, char** argv) {
 
 
 	while(true){
-		cout << "\t\t-------- Music PLayer --------\t\t"<<endl;
-		cout << "\t* Ingrese Operacion a realizar:\t" <<endl;
+		cout << "\tMusic PLayer\t";
+		cout << "\tIngrese Operacion a realizar:\t" <<endl;
 		string operation;
 		cin >> operation;
 
@@ -179,9 +179,9 @@ int main(int argc, char** argv) {
 		if (operation!="add" && operation!="next" ){
 
 			s.send(m);
-			//Aqui hay que hacer que reciba todos los mensajes en answer 
+			
 			s.receive(answer); //sincrono
-		
+			
 			answer >> result;
 			}else{
 				result = "add";
