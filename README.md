@@ -1,7 +1,5 @@
 # Cliente-Servidor
 
-# Cliente-Servidor
-
 This repository contains some implementations in c ++ for the client-server matter using the zmqpp library.
 
 In the Spotify_Proyect folder you will find a simple implementation of a music server.
