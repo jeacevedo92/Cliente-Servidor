@@ -9,3 +9,5 @@ If you want more songs you can download them from the following link
 
 https://drive.google.com/open?id=0B76n4SHPvgJUZUt1bERKcThzZkU
 
+to compile the program, simply make command.
+In addition you must create a folder called splits
