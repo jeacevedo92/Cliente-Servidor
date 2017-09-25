@@ -1,4 +1,5 @@
-#include <bits/stdc++.h>
+#include <cmath>
+#include <vector>
 
 using namespace std;
 
