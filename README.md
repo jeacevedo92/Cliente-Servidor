@@ -1,7 +1,7 @@
 # Cliente-Servidor
 This repository contains some implementations in c ++ for the client-server matter
 
-# Folder Spotify_Proyect
+## Folder Spotify_Proyect
 In the Spotify_Proyect folder you will find a simple implementation of a music server.
 
 If you want more songs you can download them from the following link
@@ -15,7 +15,7 @@ In addition you must create a folder called splits
 
 development of a program to multiply matrices that becomes progressively concurrent, the first versions do sequentially, the last will do concurrently intelligent
 
-###mult0
+### mult0
 
 Multiplication of matrices sequentially.
 ```
