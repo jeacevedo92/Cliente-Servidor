@@ -1,0 +1,9 @@
+parcial I  cliente servidor
+
+ realizar un diseño y pseudocodigo
+ funcionalidad de cada modulo
+
+llamada en pareja
+chat  de llamadas grupales
+
+documentar las desventajas del diseño
