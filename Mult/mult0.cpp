@@ -1,5 +1,6 @@
 #include "graphreader.hh"
-#include "timer.h"
+#include "stats.hh"
+#include "timer.hh"
 #include <cassert>
 #include <iostream>
 #include <string>
@@ -15,13 +16,30 @@ void mult0(const Mat &m1, const Mat &m2, Mat &res) {
 
   assert(j == k);
 
-  for (int a = 0; a < i; a++) {
-    for (int b = 0; b < l; b++) {
-      for (int c = 0; c < j; c++) {
+  for (int a = 0; a < i; a++)
+    for (int b = 0; b < l; b++)
+      for (int c = 0; c < j; c++)
         res[a][b] += m1[a][c] * m2[c][b];
-      }
-    }
+}
+
+void benchmark(int times, const string &fileName) {
+  Mat g = readGraph(fileName);
+  Mat r;
+  r.resize(g.size());
+  for (int i = 0; i < g.size(); i++)
+    r[i].resize(g.size());
+
+  vector<long> runningTimes;
+  runningTimes.reserve(times);
+
+  for (int i = 0; i < times; i++) {
+    Timer t("mult0");
+    mult0(g, g, r);
+    runningTimes.push_back(t.elapsed());
   }
+  double am = arithmeticMean(runningTimes);
+  double sd = StandardDeviation(runningTimes);
+  cout << "mean: " << am << " s.dev: " << sd << endl;
 }
 
 int main(int argc, char **argv) {
@@ -29,14 +47,6 @@ int main(int argc, char **argv) {
     cerr << "Error!!" << endl;
   }
   string fileName(argv[1]);
-  Mat g = readGraph(fileName);
-  Mat r;
-  r.resize(g.size());
-  for (int i = 0; i < g.size(); i++) {
-    r[i].resize(g.size());
-  }
-  Timer t("mult0");
-  mult0(g, g, r);
-  cout << t.elapsed() << " ms." << endl;
+  benchmark(10, fileName);
   return 0;
 }

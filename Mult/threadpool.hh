@@ -1,4 +1,5 @@
 #include "safeQueue.hh"
+#include "safehash.hh"
 #include <atomic>
 #include <thread>
 
@@ -18,17 +19,28 @@ public:
 };
 
 class thread_pool {
-
   std::atomic_bool done;
   threadsafe_queue<std::function<void()>> work_queue;
   std::vector<std::thread> threads;
-  join_threads *joiner;
+  join_threads joiner;
+  threadsafe_hash<std::thread::id, int> m;
 
   void worker_thread() {
-    while (!done && !work_queue.empty()) {
+    while (!done) {
       std::function<void()> task;
       if (work_queue.try_pop(task)) {
-        std::cerr << "I'm " << std::this_thread::get_id() << std::endl;
+        {
+
+          auto tid = std::this_thread::get_id();
+          if (m.count(tid) <= 0) {
+            m.insert(tid, 1);
+          } else {
+            // lock_guard();
+            int c = m.get(tid);
+            c++;
+            m.insert(tid, c);
+          }
+        }
         task();
       } else {
         std::this_thread::yield();
@@ -37,9 +49,8 @@ class thread_pool {
   }
 
 public:
-  thread_pool() : done(false), joiner(new join_threads(threads)) {
+  thread_pool() : done(false), joiner(threads) {
     unsigned const thread_count = std::thread::hardware_concurrency();
-    std::cerr << "Creating pool with " << thread_count << " threads" << endl;
     try {
       for (unsigned i = 0; i < thread_count; ++i) {
         threads.push_back(std::thread(&thread_pool::worker_thread, this));
@@ -49,16 +60,10 @@ public:
       throw;
     }
   }
-  ~thread_pool() {
-    joiner->~join_threads();
-    done = true;
-    // std::string s("Destructing pool ");
-    // s += std::to_string(work_queue.empty());
-    // s += '\n';
-    // std::cerr << s;
-  }
+
+  ~thread_pool() { done = true; }
+
   template <typename FunctionType> void submit(FunctionType f) {
     work_queue.push(std::function<void()>(f));
-    //    std::cerr << std::this_thread::get_id() << std::endl;
   }
 };

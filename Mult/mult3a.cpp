@@ -1,3 +1,4 @@
+#include "ThreadPool.hh"
 #include "graphreader.hh"
 #include "stats.hh"
 #include "timer.hh"
@@ -20,21 +21,19 @@ void dot(const Mat &m1, const Mat &m2, int a, Mat &res) {
   }
 }
 
-void mult2(const Mat &m1, const Mat &m2, Mat &res) {
+void mult3(const Mat &m1, const Mat &m2, Mat &res) {
   int i = m1.size();    // number of rows in m1
   int j = m1[0].size(); // number of cols in m1
   int k = m2.size();    // number of rows in m2
   int l = m2[0].size(); // number of cols in m2
 
   assert(j == k);
-  vector<thread> ts;
-  ts.reserve(i * l);
-  for (int a = 0; a < i; a++) {
-    ts.push_back(thread(dot, cref(m1), cref(m2), a, ref(res)));
-  }
 
-  for (thread &t : ts)
-    t.join();
+  ThreadPool pool(thread::hardware_concurrency());
+  for (int a = 0; a < i; a++) {
+    pool.AddJob( //
+        [&m1, &m2, a, &res]() { dot(m1, m2, a, res); });
+  }
 }
 
 void benchmark(int times, const string &fileName) {
@@ -48,8 +47,8 @@ void benchmark(int times, const string &fileName) {
   runningTimes.reserve(times);
 
   for (int i = 0; i < times; i++) {
-    Timer t("mult2");
-    mult2(g, g, r);
+    Timer t("mult3");
+    mult3(g, g, r);
     runningTimes.push_back(t.elapsed());
   }
   double am = arithmeticMean(runningTimes);
