@@ -1,13 +1,13 @@
 #include "../lib/sparseMat.hh"
 #include "../lib/timer.hh"
-
+//#include "../lib/thread_pool_Simple.hh"
 #include "../lib/threadpool.hh"
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <limits>
 #include <cmath>
-
+#include <thread>
 
 using namespace std;
 
@@ -124,10 +124,14 @@ void readGraphS(string fileName, sparseMat<int> &m) {
   }
 }
 
+
 void sparseADMult(sparseMat<int> &ma, sparseMat<int> &mb, sparseMat<int> &mr) {
+
 
   SparseAcumulator SPA;
   SPA.set(ma.getDimension());
+
+  thread_pool pool;
 
   mr.row_ptr.push_back(0);
   for (int i = 0; i < ma.row_ptr.size()-1; ++i)
@@ -136,8 +140,10 @@ void sparseADMult(sparseMat<int> &ma, sparseMat<int> &mb, sparseMat<int> &mr) {
     {
       for (int j = mb.row_ptr[ma.col_ind[k]-1]; j < mb.row_ptr[ma.col_ind[k]]; ++j)
       {
+
+     //pool.submit([&SPA, value, pos]() { scatterSPA(SPA, ma.val[k]+mb.val[j], mb.col_ind[j]); });
         scatterSPA(SPA, ma.val[k]+mb.val[j], mb.col_ind[j]);
-        
+       
       }
     }
     gatherSPA(SPA, mr);
@@ -146,29 +152,13 @@ void sparseADMult(sparseMat<int> &ma, sparseMat<int> &mb, sparseMat<int> &mr) {
   }
 }
 
-
-
-int main(int argc, char const **argv)
-{
-  sparseMat<int> Mat1, MatR, MatE;
-
-  string fileName(argv[1]);
-
-  readGraphS(fileName, Mat1);
-
-  compressVec(Mat1.row_ptr);
-
-  Mat1.row_ptr.push_back(Mat1.col_ind.size());
-
-  Timer t("sparseADMult");
+void MUltLog(sparseMat<int> &Mat1, sparseMat<int> &MatR){
 
   int timesMult = ceil(log2(Mat1.getDimension()));
-
+ 
 
   for (int i = 0; i < timesMult; ++i)
-  {
-    // cout << "prueee11" <<endl; 
-
+  {  
     sparseADMult(Mat1, Mat1, MatR);
     MatR.setDimension(Mat1.getDimension()); 
 
@@ -192,10 +182,42 @@ int main(int argc, char const **argv)
 
   }
 
+
+
+}
+
+
+
+int main(int argc, char const **argv)
+{
+
+  clock_t start, end;
+  double time_used;
+
+
+  sparseMat<int> Mat1, MatR;
+
+  string fileName(argv[1]);
+
+  readGraphS(fileName, Mat1);
+
+  compressVec(Mat1.row_ptr);
+  Mat1.row_ptr.push_back(Mat1.col_ind.size());
+
+  //inicia reloj
+  start = clock();
+
+  MUltLog(Mat1,MatR);  
+
+  //Se obtiene el tiempo final  
+  end = clock();
+
+  cout <<"tiempo de Ejecucion: ";
+  time_used = ((double) (end - start)) /CLOCKS_PER_SEC;
+  
+  printf ("%0.10lf \n",time_used);
+
   Mat1.print1();
   cout<<endl<<endl;
-
-
-  // cout << "tiempo: " << t.elapsed() << endl;
   
 }
