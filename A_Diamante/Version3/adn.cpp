@@ -135,8 +135,6 @@ void DiamondThread(sparseMat<int> &ma, sparseMat<int> &mb, int i, SparseAcumulat
         scatterSPA(SPA, ma.val[k]+mb.val[j], mb.col_ind[j]);
       }
     }
-
-
 }
 
 
@@ -152,8 +150,7 @@ void sparseADMult(sparseMat<int> &ma, sparseMat<int> &mb, sparseMat<int> &mr) {
 
 
   for (int i = 0; i < ma.row_ptr.size()-1; ++i){
-    
-  cout<<"pueba3"<<endl;
+
 
     pool.submit([&ma, &mb, i, &SPA]() { DiamondThread(ma, mb,i,SPA); });
 
