@@ -133,19 +133,29 @@ int generator_uniform_int_distribution(int SpaceKeys){
 
 }
 
+void welcome(){
+
+    cout << "\t Bit Torrent\t";
+    cout << "\t Enter operation: \t" <<endl;
+
+    cout << "---------------------" << endl;
+    cout << "1. connect to Ring" << endl;
+    cout << "2. Exit To ring" << endl;
+    cout << "3. Dowload file" << endl;
+    cout << "4. Exit" << endl;
+    cout << "---------------------" << endl;
+}
+
 int main(int argc, char** argv) {
 
     int SpaceKeys = 100;    
-    
-	cout << "This is the node\n";
+   
     Node node;
 
     //se lanza el hilo servidor
     thread t1(Server);
 
-
     string TypeNode(argv[1]);
-    string PortToConect
 
 
     if (TypeNode == "FN"){
@@ -163,21 +173,41 @@ int main(int argc, char** argv) {
     }
 
 
-    //client
+    //----------------------------------- client ---------------------------------------
+
     context ctx_Client;    
     socket s_client(ctx_Client, socket_type::req);
 
-    cout << "Connecting to tcp port 5551\n";
-    s_client.connect("tcp://localhost:5551");
+
 
     while(true) {
-        
-        cout << "\t Bit Torrent\t";
-        cout << "\t Enter operation to perform:\t" <<endl;
+
+        welcome();
 
         string operation;
         cin >> operation;
 
+         string PathToConnect;
+
+
+        if (operation == "1"){
+
+            string IpToConnect;
+            string PortToConect;
+
+            cout << "Enter the Ip to connect";
+            cin >> IpToConnect;
+
+            cout << "Enter the Port To Conect"
+            cin >> PortToConect;
+
+            PathToConnect = "tcp://" + IpToConnect + ":" + PortToConect;
+
+            cout << "Connecting to ip: "<<IpToConnect<<" port: "<<PortToConect<<endl;
+            s_client.connect(PathToConnect);
+
+
+        }
         message m;
         message answer;
         string result;
